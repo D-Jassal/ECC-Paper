@@ -32,6 +32,7 @@
 \newtheorem{lem}[thm]{Lemma}
 \newtheorem{conj}[thm]{Conjecture}
 \newtheorem{quest}[thm]{Question}
+\newtheorem{prob}[thm]{Problem}
 
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition}
@@ -60,8 +61,75 @@
     You can use it as a guide for your submission.
 \end{abstract}
 \section{Introduction}
+Elliptic Cruve Cryptography (ECC) is powerful tool in modern day public-key cryptography. Where systems like RSA (Rivest-Shamir-Adelman) public-key cryptography needs 4096 bits, ECC needs only about 313 bits for the same level of security (Washington). This gives ECC the advantage of being more efficient, meaning less computational power is needed to implement, making it cheaper. This makes them very useful in resource constrained enviroments such as mobile devices.
+
+\indent ECC is an example of something that was at first studied in a strictly pure math enviroment (Lozanzo-Robledo, Washington) which was then implemented to a non-pure math setting (Washington). Elliptic curves were first studied as objects in number theory and algebraic geometry. Fermat's Last Theorem was proven By Andrew Wiles in 1994 by proving a special case of the modulatiry theorem for the Frey curve (Lozanzo-Robledo, Washington). In the mid to late 1980 Neal Koblitz and Victor Miller independantly using the points of elliptic curves in finite fields as the foundation for a cryptography system (Koblitz, Washington). 
+
+\indent This paper is organizaed to first lay the necessecary groundwork for one to understand elliptic curves in this algebraic context. Next, will be mathematical constraints of RSA add ECC systems moving into the elliptic curve discrete logarithm problem and the Group Law. Finally a worked through example of an elliptic curve Diffie Helman key exchange protocol will be given.
+
 \section{Background}
+To understand ECC we must first understand the geometry and algebra behind elliptic curves.
+\begin{defn}[Finite Field]\label{ff}
+    A finite field $F$ is a field with finite order. A field is a set of numbers on which addition, subtraction, multiplication, and division (by non-zero elements) is well defined. 
+\end{defn}
+Due to the context of this paper, we need to only consider the integers modulo $q$ ($\mathbb{Z}_q$) where $q$ is a prime power $q=p^k$ for some prime $p$ and $k\geq1\in\mathbb{N}$. 
+\begin{defn}[Elliptic Curves over Finite Fields]\label{defn:ECC-FF}
+    In the context of cryptography, an elliptic curve $E$ over a finite field $\mathbb{Z}_q$ ($q=p^k,\,p\geq3$) is defined by the Weierstrass equation 
+    \begin{equation}\label{eqn:EC}
+        y^2=x^3+ax+b
+    \end{equation}
+    where $a,b,x,y\in\mathbb{Z}_q$, and $a,b$ are chosen such that $\Delta=16\left(4a^3+27b^2\right)\neq 0$ in $\mathbb{Z}_q$ (Koblitz, Lozanzo-Robledo, Washington).\\ 
+    We define the set $E(\mathbb{Z}_q)=\left\{(x,y)\in \mathbb{Z}_q\times\mathbb{Z}_q:y^2\equiv x^3+Ax+B\mod p\right\}\cup \{\mathcal{O}\}$, where $\mathcal{O}$ is a point at infinity. 
+\end{defn}
+Since we are discussing elliptic curves over a finite field in a group theory context it only makes sense to define a binary operation between two points on the curve.
+
+\begin{defn}[Point Addition on an Elliptic Curve $E$]\label{dfn:paec}
+    Let $E$ be an elliptic curve over a finite field $\mathbb{Z}_q$ defined by the equation (\ref{eqn:EC}). We define point addition $\oplus$ for points in $E(\mathbb{Z}_q)$ as follows:
+
+    \textbf{Geometric Definition (over $\mathbb{R}$ for intuition):}
+    Let $A, B \in E(\mathbb{Z}_q)$.
+    \begin{itemize}
+        \item \textbf{Identity:} The point at infinity $\mathcal{O}$ is the additive identity. Thus, for any point $P$, $P \oplus \mathcal{O} = \mathcal{O} \oplus P = P$.
+        \item \textbf{Negative:} The negative of a point $A = (x_1, y_1)$ is its reflection over the x-axis, $-A = (x_1, -y_1)$. By the curve equation, $-A$ is also on the curve. By definition, $A \oplus (-A) = \mathcal{O}$.
+        \item \textbf{Addition ($A \neq \mathcal{O}, B \neq \mathcal{O}, A \neq \pm B$):} Draw the line $\overline{AB}$ through $A$ and $B$. This line intersects the curve at a third point $C'$. Then $A \oplus B$ is defined as $-C'$, the reflection of $C'$ over the x-axis.
+        \item \textbf{Doubling ($A = B$):} Draw the tangent line to the curve at point $A$. This line intersects the curve at another point $C'$. Then $A \oplus A = 2A$ is defined as $-C'$.
+    \end{itemize}
+
+    \textbf{Algebraic Definition (for computation in $\mathbb{Z}_q$):}
+    Let $A = (x_1, y_1)$ and $B = (x_2, y_2)$ be points on $E(\mathbb{Z}_q)$.
+    \begin{itemize}
+        \item If $A = \mathcal{O}$, then $A \oplus B = B$.
+        \item If $B = \mathcal{O}$, then $A \oplus B = A$.
+        \item Else, if $x_1 = x_2$ and $y_1 = -y_2$ (i.e., $A = -B$), then $A \oplus B = \mathcal{O}$.
+        \item Else, if $A \neq B$ (general addition), let the slope $m$ be:
+              \[
+              m = \frac{y_2 - y_1}{x_2 - x_1} \mod p
+              \]
+        \item Else, if $A = B$ (point doubling), let the slope $m$ be:
+              \[
+              m = \frac{3x_1^2 + a}{2y_1} \mod p
+              \]
+        \item Then, the coordinates of $A \oplus B = (x_3, y_3)$ are given by:
+              \[
+              x_3 = m^2 - x_1 - x_2 \mod p, \quad y_3 = m(x_1 - x_3) - y_1 \mod p
+              \]
+    \end{itemize}
+\end{defn}
+
+
+\begin{prob}[Discrete Logarithm Problem (DLP)]\label{pb:dlp}
+    Given $\alpha\in G$ and $\beta\in\langle\alpha\rangle$, find the least positive integer $x$ such that $x\alpha = \beta$ (Sutherland).
+\end{prob}
+The DLP is why breaking encrypted messages is so difficult. Trying to find $x$ by brute force is very impractical since the easiest solution to prevent this attack from working is simply picking a very large $x$. It is general consensus that there is not a polynomial time algorithm to find $x$ (Sutherland).
+\begin{prob}[Elliptic Curve Discrete Logarithm Problem (ECDLP)]\label{pb:ecdlp}
+    Let $E$ be an elliptic curve over a finite field $\mathbb{Z}_q$. Let $P\in E(\mathbb{Z}_q)$ with $|P|=n$, and let $Q\in\langle P\rangle$. Then $Q=kP=\underbrace{P\oplus P\oplus \cdots\oplus P}_{k\text{ times}}$ for some $k\in\mathbb{Z}$. We call $k$ the discrete logarithm of $Q$ with respect to P.
+\end{prob}
 \section{Main Results}
+Perhaps an unsurprising fact about the set $E(\mathbb{Z}_q)$ with the binary operation $\oplus$ defined in definition (\ref{dfn:paec}) make a group. However, something that may be surprising is that this group $(E(\mathbb{Z}_q),\oplus)$ is an Abelian group. With this we move onto our first theorem.
+\begin{thm}[]\label{thm:gp-law}
+
+\end{thm}
+
 \section{Examples}
 \section{Applications}
 \section{Bibliography}
