@@ -141,11 +141,11 @@ Perhaps something that may be surprising about the set $E(\mathbb{Z}_q)$ with th
 
 \section{Examples and Applications}
 
-\subsection{Example: Constructing a Small Elliptic Curve Group}
+\subsection*{Example: Constructing a Small Elliptic Curve Group}
 
 To illustrate the concepts defined above, we will construct a small elliptic curve group and perform point addition.
 
-Let us define an elliptic curve over the finite field $\mathbb{F}_{23}$. We choose $a = 1$ and $b = 4$ for our curve equation $y^2 = x^3 + x + 4$. First, we verify the curve is non-singular by checking the discriminant $\Delta$:
+Let us define an elliptic curve over the finite field $\mathbb{F}_{23}$. We choose $a = 1$ and $b = 4$ for our curve equation $y^2 = x^3 + x + 4$. First, we verify the curve is non-singular (i.e., $\Delta\neq0$) by checking the discriminant $\Delta$:
 \[
 \Delta = -16(4a^3 + 27b^2) = -16(4(1)^3 + 27(4)^2) = -16(4 + 432) = -6976.
 \]
@@ -189,7 +189,7 @@ The equation holds, so $P$ is on the curve. We will now compute $2P = P \oplus P
 
 Therefore, $2P = (13, 12)$. The reader can verify that $(13, 12)$ is indeed a point on the curve $E$. By continuing this process, one can compute the entire group. It can be shown that $E(\mathbb{F}_{23})$ has $29$ points ($28$ finite points and $\mathcal{O}$) and is a cyclic group.
 
-\subsection{Application: Elliptic Curve Diffie-Hellman Key Exchange (ECDH)}
+\subsection*{Application: Elliptic Curve Diffie-Hellman Key Exchange (ECDH)}
 
 The Elliptic Curve Diffie-Hellman (ECDH) protocol is a direct application of the group law on elliptic curves and the hardness of the ECDLP. It allows two parties, Alice and Bob, to establish a shared secret over an insecure channel.
 
