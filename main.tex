@@ -135,7 +135,8 @@ Perhaps something that may be surprising about the set $E(\mathbb{Z}_q)$ with th
 \begin{thm}[Elliptic Curve Security]\label{thm:ecdlp}
     ECC is more secure than RSA, and the security of ECC is realiant on the computational difficultly of the ECDLP.
 \end{thm}
-\noindent\textit{Explanation.} This proof is more of a explanation rather than a proof. For RSA there are sub-exponential time algorithms such as the Index Calculus Method (Washington) than can be used to solve the discrete log problem. However for the ECDLG (elliptic curve discrete logarithm problem) there are no known sub-exponential time algorithms. Some of the best known algorithms such as Pollard's $\rho$ algorithm have a running time of $O(\sqrt{n})$, where $n$ is the subgroup order (Washington). So far, it has not been shown that a sub-exponential time algorithm exists of the ECDLP. So the fact that a non sub-exponential time algorithm does not exist is not a fact, but rather an assumption. This assumption is similar to how factoring large integers into primes is hard is an assumption for the RSA crytpo system.
+\noindent\textit{Explanation.} The reason we present an explanation instead of a proof can be extrapolated from the explanation.\\ 
+For RSA there are sub-exponential time algorithms such as the Index Calculus Method (Washington) than can be used to solve the discrete log problem. However for the ECDLG (elliptic curve discrete logarithm problem) there are no known sub-exponential time algorithms. Some of the best known algorithms such as Pollard's $\rho$ algorithm have a running time of $O(\sqrt{n})$, where $n$ is the subgroup order (Washington). So far, it has not been shown that a sub-exponential time algorithm exists of the ECDLP. So the fact that a non sub-exponential time algorithm does not exist is not a fact, but rather an assumption. This assumption is similar to how factoring large integers into primes is hard is an assumption for the RSA crytpo system.
 
 
 
