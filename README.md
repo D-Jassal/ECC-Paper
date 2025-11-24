@@ -1,2 +1,2 @@
 # ECC-Paper
-Paper on elliptice curve cryptography and group theory
+Paper on elliptic curve cryptography and group theory
