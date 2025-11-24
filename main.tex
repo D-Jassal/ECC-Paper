@@ -57,8 +57,7 @@
 \newpage
 \maketitle
 \begin{abstract}
-    This is a sample file.
-    You can use it as a guide for your submission.
+    Abstract goes here
 \end{abstract}
 \section{Introduction}
 Elliptic Cruve Cryptography (ECC) is powerful tool in modern day public-key cryptography. Where systems like RSA (Rivest-Shamir-Adelman) public-key cryptography needs 4096 bits, ECC needs only about 313 bits for the same level of security (Washington). This gives ECC the advantage of being more efficient, meaning less computational power is needed to implement, making it cheaper. This makes them very useful in resource constrained enviroments such as mobile devices.
@@ -125,12 +124,107 @@ The DLP is why breaking encrypted messages is so difficult. Trying to find $x$ b
     Let $E$ be an elliptic curve over a finite field $\mathbb{Z}_q$. Let $P\in E(\mathbb{Z}_q)$ with $|P|=n$, and let $Q\in\langle P\rangle$. Then $Q=kP=\underbrace{P\oplus P\oplus \cdots\oplus P}_{k\text{ times}}$ for some $k\in\mathbb{Z}$. We call $k$ the discrete logarithm of $Q$ with respect to P.
 \end{prob}
 \section{Main Results}
-Perhaps an unsurprising fact about the set $E(\mathbb{Z}_q)$ with the binary operation $\oplus$ defined in definition (\ref{dfn:paec}) make a group. However, something that may be surprising is that this group $(E(\mathbb{Z}_q),\oplus)$ is an Abelian group. With this we move onto our first theorem.
+Perhaps something that may be surprising about the set $E(\mathbb{Z}_q)$ with the binary operation $\oplus$ defined in definition (\ref{dfn:paec}) is an Abelian group. With this we move onto our first theorem.
 \begin{thm}[]\label{thm:gp-law}
-
+    The group $(E(\mathbb{Z}_q),\oplus)$ is an Abelian group.
 \end{thm}
+\begin{proof}
+    Closeure under $\oplus$ is apparent from the fact that by definition the resulting value is another point on the elliptic curve. Commutativity can be easily seen from either the geometric interpretation of definition (\ref{dfn:paec}) or from the formulas. As the lines $\overline{AB}$ and $\overline{BA}$ are the same exacts lines. The identity element in this group is $\mathcal{O}$. If $A=(x_1,y_1)\in E(\mathbb{Z}_q)$ then it can be seen from definition (\ref{dfn:paec}) that $A^{-1}=(x_1,-y_1)\in E(\mathbb{Z}_q)$, then $A\oplus A^{-1}=\mathcal{O}=e_{E{\mathbb{Z}_q}}$.\\
+    All that is left to show that $(E(\mathbb{Z}_q),\oplus)$ is a group is that associativity holds. This is not at all apparently obvious from either the geometric or algebraic definition given in (\ref{dfn:paec}). In fact, this is quite a complicated proof and it beyond the scope of this paper, so we refer the reader to \textsection 2.4 of \textit{Elliptic Curves Number Theory and Cryptography} by \textit{Lawrence C. Washington}.
+\end{proof}
+\begin{thm}[Elliptic Curve Security]\label{thm:ecdlp}
+    ECC is more secure than RSA, and the security of ECC is realiant on the computational difficultly of the ECDLP.
+\end{thm}
+\noindent\textit{Explanation.} This proof is more of a explanation rather than a proof. For RSA there are sub-exponential time algorithms such as the Index Calculus Method (Washington) than can be used to solve the discrete log problem. However for the ECDLG (elliptic curve discrete logarithm problem) there are no known sub-exponential time algorithms. Some of the best known algorithms such as Pollard's $\rho$ algorithm have a running time of $O(\sqrt{n})$, where $n$ is the subgroup order (Washington). So far, it has not been shown that a sub-exponential time algorithm exists of the ECDLP. So the fact that a non sub-exponential time algorithm does not exist is not a fact, but rather an assumption. This assumption is similar to how factoring large integers into primes is hard is an assumption for the RSA crytpo system.
 
-\section{Examples}
-\section{Applications}
+
+
+\section{Examples and Applications}
+
+\subsection{Example: Constructing a Small Elliptic Curve Group}
+
+To illustrate the concepts defined above, we will construct a small elliptic curve group and perform point addition.
+
+Let us define an elliptic curve over the finite field $\mathbb{F}_{23}$. We choose $a = 1$ and $b = 4$ for our curve equation $y^2 = x^3 + x + 4$. First, we verify the curve is non-singular by checking the discriminant $\Delta$:
+\[
+\Delta = -16(4a^3 + 27b^2) = -16(4(1)^3 + 27(4)^2) = -16(4 + 432) = -6976.
+\]
+Working modulo $23$, we find $-6976 \equiv 9 \not\equiv 0 \pmod{23}$. Thus, the curve is non-singular.
+
+Our elliptic curve is defined as:
+\[
+E(\mathbb{F}_{23}): y^2 = x^3 + x + 4.
+\]
+The set of points $E(\mathbb{F}_{23})$ consists of all pairs $(x, y) \in \mathbb{F}_{23} \times \mathbb{F}_{23}$ satisfying this equation, along with the point at infinity $\mathcal{O}$.
+
+Let us find the point $P = (0, 2)$. Substituting into the curve equation:
+\[
+2^2 = 4 \equiv 0^3 + 0 + 4 \equiv 4 \pmod{23}.
+\]
+The equation holds, so $P$ is on the curve. We will now compute $2P = P \oplus P$ using the point doubling formulas from Definition \ref{dfn:paec}.
+
+\begin{itemize}
+    \item Since $A = B = (0, 2)$, we use the point doubling formula.
+    \item Calculate the slope $m$:
+    \[
+    m = \frac{3x_1^2 + a}{2y_1} = \frac{3(0)^2 + 1}{2 \cdot 2} = \frac{1}{4} \mod 23.
+    \]
+    We need the multiplicative inverse of $4$ modulo $23$. Since $4 \times 6 = 24 \equiv 1 \pmod{23}$, the inverse is $6$.
+    \[
+    m = 1 \times 6 = 6 \mod 23.
+    \]
+    \item Now calculate $x_3$:
+    \[
+    x_3 = m^2 - x_1 - x_2 = 6^2 - 0 - 0 = 36 \equiv 13 \pmod{23}.
+    \]
+    \item Finally, calculate $y_3$:
+    \[
+    y_3 = m(x_1 - x_3) - y_1 = 6(0 - 13) - 2 = 6(-13) - 2 = -78 - 2 = -80 \pmod{23}.
+    \]
+    Since $-80 \div 23 = -4$ with a remainder of $12$ ($-80 - (-4\times23) = -80 + 92 = 12$), we have:
+    \[
+    y_3 \equiv 12 \pmod{23}.
+    \]
+\end{itemize}
+
+Therefore, $2P = (13, 12)$. The reader can verify that $(13, 12)$ is indeed a point on the curve $E$. By continuing this process, one can compute the entire group. It can be shown that $E(\mathbb{F}_{23})$ has $29$ points ($28$ finite points and $\mathcal{O}$) and is a cyclic group.
+
+\subsection{Application: Elliptic Curve Diffie-Hellman Key Exchange (ECDH)}
+
+The Elliptic Curve Diffie-Hellman (ECDH) protocol is a direct application of the group law on elliptic curves and the hardness of the ECDLP. It allows two parties, Alice and Bob, to establish a shared secret over an insecure channel.
+
+\subsubsection*{Protocol Setup}
+
+\begin{enumerate}
+    \item \textbf{Public Parameters:} Alice and Bob publicly agree on:
+    \begin{itemize}
+        \item An elliptic curve $E$ defined over a finite field $\mathbb{F}_q$.
+        \item A base point $P \in E(\mathbb{F}_q)$ with large prime order $n$. (The subgroup $\langle P \rangle$ is large and cyclic.)
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection*{Key Exchange}
+
+\begin{enumerate}
+    \item \textbf{Alice} generates a private key, a randomly selected integer $a$ with $1 < a < n$.
+    \item \textbf{Alice} computes her public key $A = aP \in E(\mathbb{F}_q)$ and sends it to Bob.
+    \item \textbf{Bob} generates a private key, a randomly selected integer $b$ with $1 < b < n$.
+    \item \textbf{Bob} computes his public key $B = bP \in E(\mathbb{F}_q)$ and sends it to Alice.
+    \item \textbf{Shared Secret:}
+    \begin{itemize}
+        \item \textbf{Alice} receives $B$ and computes $S = aB = a(bP)$.
+        \item \textbf{Bob} receives $A$ and computes $S = bA = b(aP)$.
+    \end{itemize}
+    Both calculations yield the same shared secret point $S = abP \in E(\mathbb{F}_q)$.
+\end{enumerate}
+
+\subsubsection*{Security}
+
+An eavesdropper, Eve, observes the public parameters $E, P, q$ and the public keys $A = aP$ and $B = bP$. To compute the shared secret $S = abP$, Eve must solve the \textbf{Elliptic Curve Diffie-Hellman Problem (ECDHP)}: find $abP$ given $P$, $aP$, and $bP$.
+
+It is widely believed that the only feasible way to solve the ECDHP is by first solving the ECDLP (e.g., by finding $a$ from $A = aP$ and then computing $aB$). Since the ECDLP is computationally intractable for well-chosen curves, Eve cannot derive the shared secret. The x-coordinate of the point $S$ is typically used as the shared symmetric key for subsequent encryption.
+
+
+
 \section{Bibliography}
 \end{document}
