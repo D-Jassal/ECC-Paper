@@ -28,7 +28,6 @@
         }
 \date{\today}
 
-
 % Theorem system
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{cor}[thm]{Corollary}
@@ -59,14 +58,17 @@
 
 \begin{document}
 \newpage
-\maketitle
 \begin{abstract}
-    Abstract goes here
+    Elliptic Curve Cryptography (ECC) represents a powerful application of abstract algebra to modern cryptography, offering equivalent security to traditional systems with significantly smaller key sizes. This paper investigates the group-theoretic foundations of ECC, beginning with the definition of elliptic curves over finite fields and their associated group structure. We provide explicit formulas for point addition and doubling, accompanied by geometric interpretations and computational examples. 
+
+    Central to our discussion is the Elliptic Curve Discrete Logarithm Problem (ECDLP), whose computational hardness underpins ECC's security advantages over systems like RSA. We demonstrate these concepts through a complete implementation of the Elliptic Curve Diffie-Hellman key exchange protocol, including detailed numerical computations over $\mathbb{F}_{23}$. By connecting theoretical results from group theory and number theory to practical cryptographic applications, this paper showcases the profound interplay between pure mathematics and real-world security systems.
 \end{abstract}
+\maketitle
+
 \section{Introduction}
 Elliptic Cruve Cryptography (ECC) is powerful tool in modern day public-key cryptography. Where systems like RSA (Rivest-Shamir-Adelman) public-key cryptography needs 4096 bits, ECC needs only about 313 bits for the same level of security \cite{Washington2008}. This gives ECC the advantage of being more efficient, meaning less computational power is needed to implement, making it cheaper. This makes them very useful in resource constrained enviroments such as mobile devices.
 
-\indent ECC is an example of something that was at first studied in a strictly pure math enviroment \cite{LozanoRobledo2011, Washington2008} which was then implemented to a non-pure math setting \cite{Washington2008}. Elliptic curves were first studied as objects in number theory and algebraic geometry. Fermat's Last Theorem was proven By Andrew Wiles in 1994 by proving a special case of the modulatiry theorem for the Frey curve \cite{LozanoRobledo2011, Washington2008}. In the mid to late 1980 Neal Koblitz and Victor Miller independantly using the points of elliptic curves in finite fields as the foundation for a cryptography system \cite{Koblitz1994, Washington2008}. 
+\indent ECC is an example of something that was at first studied in a strictly pure math enviroment \cite{Washington2008, LozanoRobledo2011} which was then implemented to a non-pure math setting \cite{Washington2008}. Elliptic curves were first studied as objects in number theory and algebraic geometry. Fermat's Last Theorem was proven By Andrew Wiles in 1994 by proving a special case of the modulatiry theorem for the Frey curve \cite{Washington2008, LozanoRobledo2011}. In the mid to late 1980 Neal Koblitz and Victor Miller independantly using the points of elliptic curves in finite fields as the foundation for a cryptography system \cite{Washington2008, Koblitz1994}. 
 
 \indent This paper is organized to first lay the necessecary groundwork for one to understand elliptic curves in this algebraic context. Next, will be mathematical constraints of RSA add ECC systems moving into the elliptic curve discrete logarithm problem and the Group Law. Finally a worked through example of an elliptic curve Diffie Helman key exchange protocol will be given.
 
@@ -80,7 +82,7 @@ To understand ECC we must first understand the geometry and algebra behind ellip
     \begin{equation}\label{eqn:EC}
         y^2=x^3+ax+b
     \end{equation}
-    where $a,b,x,y\in\mathbb{Z}_q$, and $a,b$ are chosen such that $\Delta=16\left(4a^3+27b^2\right)\neq 0$ in $\mathbb{Z}_q$, this is so that the polynomial (\ref{eqn:EC}) has no repeated roots \cite{Koblitz1994, LozanoRobledo2011 Washington2008, RubinsteinSalzedo2018}.\\ 
+    where $a,b,x,y\in\mathbb{Z}_q$, and $a,b$ are chosen such that $\Delta=16\left(4a^3+27b^2\right)\neq 0$ in $\mathbb{Z}_q$, this is so that the polynomial (\ref{eqn:EC}) has no repeated roots \cite{Washington2008, LozanoRobledo2011, Koblitz1994, RubinsteinSalzedo2018}.\\ 
     We define the set $E(\mathbb{Z}_q)=\left\{(x,y)\in \mathbb{Z}_q\times\mathbb{Z}_q:y^2\equiv x^3+Ax+B\mod p\right\}\cup \{\mathcal{O}\}$, where $\mathcal{O}$ is a point at infinity. 
 \end{defn}
 Since we are discussing elliptic curves over a finite field in a group theory context it only makes sense to define a binary operation between two points on the curve.
@@ -157,7 +159,7 @@ Since we are discussing elliptic curves over a finite field in a group theory co
     Let \(E\) be the elliptic curve over \(\mathbb{F}_{23}\) given by \(y^{2} = x^{3} + x + 4\). 
     Consider points \(A = (0, 2)\) and \(B = (13, 12)\).
 
-    Using the formulas from Definition~\ref{def:point-addition}, we compute \(A \oplus B\):
+    Using the formulas from Definition~\ref{dfn:paec}, we compute \(A \oplus B\):
 
     \begin{itemize}
         \item Since \(A \neq B\) and \(A \neq -B\), we use the general addition formula.
@@ -222,9 +224,9 @@ Since we are discussing elliptic curves over a finite field in a group theory co
 \end{defn}
 
 \begin{prob}[Discrete Logarithm Problem (DLP)]\label{pb:dlp}
-    Given $\alpha\in G$ and $\beta\in\langle\alpha\rangle$, find the least positive integer $x$ such that $x\alpha = \beta$ (Sutherland).
+    Given $\alpha\in G$ and $\beta\in\langle\alpha\rangle$, find the least positive integer $x$ such that $x\alpha = \beta$ \cite{Sutherland2015}.
 \end{prob}
-The DLP is why breaking encrypted messages is so difficult. Trying to find $x$ by brute force is very impractical since the easiest solution to prevent this attack from working is simply picking a very large $x$. It is general consensus that there is not a polynomial time algorithm to find $x$ (Sutherland).
+The DLP is why breaking encrypted messages is so difficult. Trying to find $x$ by brute force is very impractical since the easiest solution to prevent this attack from working is simply picking a very large $x$. It is general consensus that there is not a polynomial time algorithm to find $x$ \cite{Sutherland2015}.
 \begin{prob}[Elliptic Curve Discrete Logarithm Problem (ECDLP)]\label{pb:ecdlp}
     Let $E$ be an elliptic curve over a finite field $\mathbb{F}_q$. Let $P\in E(\mathbb{F}_q)$ with $|P|=n$, and let $Q\in\langle P\rangle$. Then $Q=kP=\underbrace{P\oplus P\oplus \cdots\oplus P}_{k\text{ times}}$ for some $k\in\mathbb{F}$. We call $k$ the discrete logarithm of $Q$ with respect to P.
 \end{prob}
@@ -385,7 +387,6 @@ The x-coordinate \(4\) can be used as a symmetric key for further encryption.
 
 \textbf{Security Note:} An eavesdropper sees \(P\), \(A = (11, 4)\), and \(B = (19, 13)\) 
 but cannot feasibly compute \(a\) or \(b\) due to the ECDLP.
-
 
 
 \section{Bibliography}
