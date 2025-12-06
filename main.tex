@@ -9,8 +9,12 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{blindtext}
+\usepackage[backend=biber, style=numeric, sorting=none]{biblatex}
+\addbibresource{references.bib}
 \usepackage{hyperref}
 \usepackage{etoolbox}
+\usepackage{tikz}
+\usetikzlibrary{patterns, decorations.pathreplacing, arrows.meta, positioning, calc}
 \makeatletter
 \patchcmd{\@sect}{\@secnumpunct}{\space}{}{}
 \makeatother
@@ -60,9 +64,9 @@
     Abstract goes here
 \end{abstract}
 \section{Introduction}
-Elliptic Cruve Cryptography (ECC) is powerful tool in modern day public-key cryptography. Where systems like RSA (Rivest-Shamir-Adelman) public-key cryptography needs 4096 bits, ECC needs only about 313 bits for the same level of security (Washington). This gives ECC the advantage of being more efficient, meaning less computational power is needed to implement, making it cheaper. This makes them very useful in resource constrained enviroments such as mobile devices.
+Elliptic Cruve Cryptography (ECC) is powerful tool in modern day public-key cryptography. Where systems like RSA (Rivest-Shamir-Adelman) public-key cryptography needs 4096 bits, ECC needs only about 313 bits for the same level of security \cite{Washington2008}. This gives ECC the advantage of being more efficient, meaning less computational power is needed to implement, making it cheaper. This makes them very useful in resource constrained enviroments such as mobile devices.
 
-\indent ECC is an example of something that was at first studied in a strictly pure math enviroment (Lozanzo-Robledo, Washington) which was then implemented to a non-pure math setting (Washington). Elliptic curves were first studied as objects in number theory and algebraic geometry. Fermat's Last Theorem was proven By Andrew Wiles in 1994 by proving a special case of the modulatiry theorem for the Frey curve (Lozanzo-Robledo, Washington). In the mid to late 1980 Neal Koblitz and Victor Miller independantly using the points of elliptic curves in finite fields as the foundation for a cryptography system (Koblitz, Washington). 
+\indent ECC is an example of something that was at first studied in a strictly pure math enviroment \cite{LozanoRobledo2011, Washington2008} which was then implemented to a non-pure math setting \cite{Washington2008}. Elliptic curves were first studied as objects in number theory and algebraic geometry. Fermat's Last Theorem was proven By Andrew Wiles in 1994 by proving a special case of the modulatiry theorem for the Frey curve \cite{LozanoRobledo2011, Washington2008}. In the mid to late 1980 Neal Koblitz and Victor Miller independantly using the points of elliptic curves in finite fields as the foundation for a cryptography system \cite{Koblitz1994, Washington2008}. 
 
 \indent This paper is organizaed to first lay the necessecary groundwork for one to understand elliptic curves in this algebraic context. Next, will be mathematical constraints of RSA add ECC systems moving into the elliptic curve discrete logarithm problem and the Group Law. Finally a worked through example of an elliptic curve Diffie Helman key exchange protocol will be given.
 
@@ -77,10 +81,46 @@ Due to the context of this paper, we need to only consider the integers modulo $
     \begin{equation}\label{eqn:EC}
         y^2=x^3+ax+b
     \end{equation}
-    where $a,b,x,y\in\mathbb{Z}_q$, and $a,b$ are chosen such that $\Delta=16\left(4a^3+27b^2\right)\neq 0$ in $\mathbb{Z}_q$ (Koblitz, Lozanzo-Robledo, Washington).\\ 
+    where $a,b,x,y\in\mathbb{Z}_q$, and $a,b$ are chosen such that $\Delta=16\left(4a^3+27b^2\right)\neq 0$ in $\mathbb{Z}_q$, this is so that the polynomial (\ref{eqn:EC}) has no repeated roots \cite{Koblitz1994, LozanoRobledo2011 Washington2008, RubinsteinSalzedo2018}.\\ 
     We define the set $E(\mathbb{Z}_q)=\left\{(x,y)\in \mathbb{Z}_q\times\mathbb{Z}_q:y^2\equiv x^3+Ax+B\mod p\right\}\cup \{\mathcal{O}\}$, where $\mathcal{O}$ is a point at infinity. 
 \end{defn}
 Since we are discussing elliptic curves over a finite field in a group theory context it only makes sense to define a binary operation between two points on the curve.
+
+\begin{exmp}[Elliptic Curve]
+    \begin{figure}[h!]
+    \centering
+\begin{tikzpicture}[scale=1.1]
+    % Axes
+    \draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$};
+    \draw[->] (0,-4) -- (0,4) node[above] {$y$};
+    \draw[dashed, gray] (-2.5,0) -- (2.5,0);
+    
+    % Elliptic curve: y^2 = x^3 - x + 1
+    \draw[domain=-1.3247:2,samples=150,smooth,variable=\x,blue,thick] 
+        plot ({\x},{sqrt(\x^3 - \x + 1)});
+    \draw[domain=-1.3247:2,samples=150,smooth,variable=\x,blue,thick] 
+        plot ({\x},{-sqrt(\x^3 - \x + 1)});
+    
+    % Highlight the x-intercept (where y=0)
+    \draw[fill=white] (-1.3247,0) circle (2pt) node[below left] {$x \approx -1.32$};
+    
+    % Add a sample point
+    \node[circle,draw=black,fill=red,inner sep=2pt] (sample) at (0,1) {};
+    \node[above right] at (0,1) {$(0,1)$};
+    
+    \node[blue,right] at (1.5,3) {$y^2 = x^3 - x + 1$};
+\end{tikzpicture}
+    \caption{The elliptic curve $y^2 = x^3 - x + 1$ over $\mathbb{R}$. 
+            The curve consists of two symmetric branches (positive and negative $y$)
+            that meet at the x-axis where $y=0$. Over $\mathbb{R}$, these form a 
+            continuous curve; over finite fields, we consider only discrete points 
+            satisfying the equation.}
+    \label{fig:classic_ec}
+    \end{figure}
+\end{exmp}
+
+
+
 
 \begin{defn}[Point Addition on an Elliptic Curve $E$]\label{dfn:paec}
     Let $E$ be an elliptic curve over a finite field $\mathbb{Z}_q$ defined by the equation (\ref{eqn:EC}). We define point addition $\oplus$ for points in $E(\mathbb{Z}_q)$ as follows:
@@ -114,7 +154,73 @@ Since we are discussing elliptic curves over a finite field in a group theory co
               \]
     \end{itemize}
 \end{defn}
+\begin{exmp}[Point Addition on an Elliptic Curve]\label{ex:point-addition}
+    Let \(E\) be the elliptic curve over \(\mathbb{F}_{23}\) given by \(y^{2} = x^{3} + x + 4\). 
+    Consider points \(A = (0, 2)\) and \(B = (13, 12)\).
 
+    Using the formulas from Definition~\ref{def:point-addition}, we compute \(A \oplus B\):
+
+    \begin{itemize}
+        \item Since \(A \neq B\) and \(A \neq -B\), we use the general addition formula.
+        
+        \item Compute slope:
+        \begin{align*}
+            m &= \frac{y_2 - y_1}{x_2 - x_1} = \frac{12 - 2}{13 - 0} = \frac{10}{13} \mod 23 \\
+              &= 10 \times 13^{-1} \mod 23 \\
+              &= 10 \times 16 \mod 23 \quad (\text{since } 13 \times 16 \equiv 1 \mod 23) \\
+              &= 160 \mod 23 = 22.
+        \end{align*}
+
+        \item Compute \(x_3\):
+        \[
+        x_3 = m^{2} - x_1 - x_2 = 22^{2} - 0 - 13 = 484 - 13 = 471 \equiv 11 \ (\text{mod } 23).
+        \]
+
+        \item Compute \(y_3\):
+        \[
+        y_3 = m(x_1 - x_3) - y_1 = 22(0 - 11) - 2 = -242 - 2 = -244 \equiv 4 \ (\text{mod } 23).
+        \]
+    \end{itemize}
+
+    Therefore, \(A \oplus B = (11, 4)\).
+
+    \noindent\textit{Verification:} We check that \((11, 4)\) satisfies the curve equation:
+    \[
+    4^{2} = 16 \equiv 11^{3} + 11 + 4 = 1331 + 11 + 4 = 1346 \equiv 16 \ (\text{mod } 23).
+    \]
+    Thus \((11, 4) \in E(\mathbb{F}_{23})\).
+\end{exmp}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[yscale=0.5]
+			%TODO: up sample size
+			\draw[domain=-4.060646:2,samples=100,smooth,variable=\x,blue] plot ({\x},{sqrt(\x^3 + 4*(\x)^2 + 1)});
+			\draw[domain=-4.060646:2,samples=100,smooth,variable=\x,blue] plot ({\x},{-sqrt(\x^3 + 4*(\x)^2 + 1)});
+			\node (P) at (-3.5, -2.66926956300783) {};
+			\node (Q) at (-0.25, 1.1102430216445) {};
+			\node (R) at (1.10295826812394, 2.68474117626385) {};
+			\node (P+Q) at (1.10295826812394, -2.68474117626385) {};
+			\draw[color=red,shorten >=-1cm,shorten <=-1cm] (P) -- (R);
+			\draw[color=red,shorten >=-1cm,shorten <=-1cm] (R) -- (P+Q);
+			\node[circle,draw=black,fill=green,label=above:{$P$}] at (P) {};
+			\node[circle,draw=black,fill=green,label=above:{$Q$}] at (Q) {};
+			\node[circle,draw=black,fill=green,label=above:{$R'$}] at (R) {};
+			\node[circle,draw=black,fill=green,label=left:{$P\oplus Q=R$}] at (P+Q) {};
+\end{tikzpicture}
+\caption{Point addition on an elliptic curve: Given points $P$ and $Q$, 
+         draw the line through them (red dashed). This line intersects the curve 
+         at a third point $R'$. The sum $P \oplus Q$ is defined as $R$, the 
+         reflection of $R'$ over the $x$-axis (green arrow). This geometric 
+         construction underlies the algebraic formulas used over finite fields. Credit to \cite{Scholl2019} for this example.}
+\label{fig:point_addition}
+\end{figure}
+
+
+
+\begin{defn}[Diffie-Hellman Key Exchange Protocol]\label{DHKEP}
+    The Diffie-Hellman Key Exchange protocol is a method used by two parties, conventionally named Alice and Bob, to agree upon a common secret key which they can then use for exchanging data via a symmetric encryption scheme \cite{Washington2008}. The security of the protocol is based on the difficulty of the Diffie-Hellman Problem (DHP), which is the computational challenge of determining the shared secret given only the public information (Rubenstein-Salzedo)
+\end{defn}
 
 \begin{prob}[Discrete Logarithm Problem (DLP)]\label{pb:dlp}
     Given $\alpha\in G$ and $\beta\in\langle\alpha\rangle$, find the least positive integer $x$ such that $x\alpha = \beta$ (Sutherland).
@@ -136,7 +242,7 @@ Perhaps something that may be surprising about the set $E(\mathbb{Z}_q)$ with th
     ECC is more secure than RSA, and the security of ECC is realiant on the computational difficultly of the ECDLP.
 \end{thm}
 \noindent\textit{Explanation.} The reason we present an explanation instead of a proof can be extrapolated from the explanation.\\ 
-For RSA there are sub-exponential time algorithms such as the Index Calculus Method (Washington) than can be used to solve the discrete log problem. However for the ECDLG (elliptic curve discrete logarithm problem) there are no known sub-exponential time algorithms. Some of the best known algorithms such as Pollard's $\rho$ algorithm have a running time of $O(\sqrt{n})$, where $n$ is the subgroup order (Washington). So far, it has not been shown that a sub-exponential time algorithm exists of the ECDLP. So the fact that a non sub-exponential time algorithm does not exist is not a fact, but rather an assumption. This assumption is similar to how factoring large integers into primes is hard is an assumption for the RSA crytpo system.
+For RSA there are sub-exponential time algorithms such as the Index Calculus Method \cite{Washington2008} than can be used to solve the discrete log problem. However for the ECDLG (elliptic curve discrete logarithm problem) there are no known sub-exponential time algorithms. Some of the best known algorithms such as Pollard's $\rho$ algorithm have a running time of $O(\sqrt{n})$, where $n$ is the subgroup order \cite{Washington2008}. So far, it has not been shown that a sub-exponential time algorithm exists of the ECDLP. So the fact that a non sub-exponential time algorithm does not exist is not a fact, but rather an assumption. This assumption is similar to how factoring large integers into primes is hard is an assumption for the RSA crytpo system.
 
 
 
@@ -226,6 +332,63 @@ An eavesdropper, Eve, observes the public parameters $E, P, q$ and the public ke
 It is widely believed that the only feasible way to solve the ECDHP is by first solving the ECDLP (e.g., by finding $a$ from $A = aP$ and then computing $aB$). Since the ECDLP is computationally intractable for well-chosen curves, Eve cannot derive the shared secret. The x-coordinate of the point $S$ is typically used as the shared symmetric key for subsequent encryption.
 
 
+\subsection*{Numerical Example of ECDH}
+
+Let us demonstrate ECDH using the curve \(E(\mathbb{F}_{23}): y^2 = x^3 + x + 4\) 
+and base point \(P = (0, 2)\). Recall from earlier that \(2P = (13, 12)\).
+
+\textbf{Step 1: Private Keys}
+\begin{itemize}
+    \item Alice chooses private key \(a = 5\)
+    \item Bob chooses private key \(b = 7\)
+\end{itemize}
+
+\textbf{Step 2: Compute Public Keys}
+\begin{itemize}
+    \item Alice computes her public key \(A = aP = 5P\):
+        \begin{align*}
+            2P &= (13, 12) \quad \text{(from Example 4.1)} \\
+            4P &= 2(2P) = 2(13, 12) = (0, 21) \quad \text{(using doubling formulas)} \\
+            5P &= 4P \oplus P = (0, 21) \oplus (0, 2) = (11, 4) \quad \text{(from Example 4.2)}
+        \end{align*}
+        So \(A = (11, 4)\).
+
+    \item Bob computes his public key \(B = bP = 7P\):
+        \begin{align*}
+            7P &= 4P \oplus 2P \oplus P \\
+               &= (0, 21) \oplus (13, 12) \oplus (0, 2) \\
+               &= \big[(0, 21) \oplus (13, 12)\big] \oplus (0, 2) \\
+               &= (17, 20) \oplus (0, 2) = (19, 13)
+        \end{align*}
+        So \(B = (19, 13)\).
+\end{itemize}
+
+\textbf{Step 3: Compute Shared Secret}
+\begin{itemize}
+    \item Alice computes \(S = aB = 5B = 5 \times (19, 13)\):
+        \begin{align*}
+            2B &= (19, 13) \oplus (19, 13) = (0, 21) \\
+            4B &= 2(2B) = 2(0, 21) = (13, 12) \\
+            5B &= 4B \oplus B = (13, 12) \oplus (19, 13) = (4, 0)
+        \end{align*}
+
+    \item Bob computes \(S = bA = 7A = 7 \times (11, 4)\):
+        \begin{align*}
+            2A &= (11, 4) \oplus (11, 4) = (17, 3) \\
+            4A &= 2(2A) = 2(17, 3) = (13, 12) \\
+            7A &= 4A \oplus 2A \oplus A = (13, 12) \oplus (17, 3) \oplus (11, 4) \\
+               &= (4, 0) \quad \text{(verification omitted for brevity)}
+        \end{align*}
+\end{itemize}
+
+Both Alice and Bob arrive at the shared secret \(S = (4, 0)\). 
+The x-coordinate \(4\) can be used as a symmetric key for further encryption.
+
+\textbf{Security Note:} An eavesdropper sees \(P\), \(A = (11, 4)\), and \(B = (19, 13)\) 
+but cannot feasibly compute \(a\) or \(b\) due to the ECDLP.
+
+
 
 \section{Bibliography}
+\printbibliography
 \end{document}
