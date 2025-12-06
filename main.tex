@@ -68,16 +68,15 @@ Elliptic Cruve Cryptography (ECC) is powerful tool in modern day public-key cryp
 
 \indent ECC is an example of something that was at first studied in a strictly pure math enviroment \cite{LozanoRobledo2011, Washington2008} which was then implemented to a non-pure math setting \cite{Washington2008}. Elliptic curves were first studied as objects in number theory and algebraic geometry. Fermat's Last Theorem was proven By Andrew Wiles in 1994 by proving a special case of the modulatiry theorem for the Frey curve \cite{LozanoRobledo2011, Washington2008}. In the mid to late 1980 Neal Koblitz and Victor Miller independantly using the points of elliptic curves in finite fields as the foundation for a cryptography system \cite{Koblitz1994, Washington2008}. 
 
-\indent This paper is organizaed to first lay the necessecary groundwork for one to understand elliptic curves in this algebraic context. Next, will be mathematical constraints of RSA add ECC systems moving into the elliptic curve discrete logarithm problem and the Group Law. Finally a worked through example of an elliptic curve Diffie Helman key exchange protocol will be given.
+\indent This paper is organized to first lay the necessecary groundwork for one to understand elliptic curves in this algebraic context. Next, will be mathematical constraints of RSA add ECC systems moving into the elliptic curve discrete logarithm problem and the Group Law. Finally a worked through example of an elliptic curve Diffie Helman key exchange protocol will be given.
 
 \section{Background}
 To understand ECC we must first understand the geometry and algebra behind elliptic curves.
 \begin{defn}[Finite Field]\label{ff}
     A finite field $F$ is a field with finite order. A field is a set of numbers on which addition, subtraction, multiplication, and division (by non-zero elements) is well defined. 
-\end{defn}
-Due to the context of this paper, we need to only consider the integers modulo $q$ ($\mathbb{Z}_q$) where $q$ is a prime power $q=p^k$ for some prime $p$ and $k\geq1\in\mathbb{N}$. 
+\end{defn} 
 \begin{defn}[Elliptic Curves over Finite Fields]\label{defn:ECC-FF}
-    In the context of cryptography, an elliptic curve $E$ over a finite field $\mathbb{Z}_q$ ($q=p^k,\,p\geq3$) is defined by the Weierstrass equation 
+    In the context of cryptography, an elliptic curve $E$ over a finite field $\mathbb{F}_q$ ($q=p^k,\,p\geq3$) is defined by the Weierstrass equation 
     \begin{equation}\label{eqn:EC}
         y^2=x^3+ax+b
     \end{equation}
@@ -123,10 +122,10 @@ Since we are discussing elliptic curves over a finite field in a group theory co
 
 
 \begin{defn}[Point Addition on an Elliptic Curve $E$]\label{dfn:paec}
-    Let $E$ be an elliptic curve over a finite field $\mathbb{Z}_q$ defined by the equation (\ref{eqn:EC}). We define point addition $\oplus$ for points in $E(\mathbb{Z}_q)$ as follows:
+    Let $E$ be an elliptic curve over a finite field $\mathbb{F}_q$ defined by the equation (\ref{eqn:EC}). We define point addition $\oplus$ for points in $E(\mathbb{F}_q)$ as follows:
 
     \textbf{Geometric Definition (over $\mathbb{R}$ for intuition):}
-    Let $A, B \in E(\mathbb{Z}_q)$.
+    Let $A, B \in E(\mathbb{F}_q)$.
     \begin{itemize}
         \item \textbf{Identity:} The point at infinity $\mathcal{O}$ is the additive identity. Thus, for any point $P$, $P \oplus \mathcal{O} = \mathcal{O} \oplus P = P$.
         \item \textbf{Negative:} The negative of a point $A = (x_1, y_1)$ is its reflection over the x-axis, $-A = (x_1, -y_1)$. By the curve equation, $-A$ is also on the curve. By definition, $A \oplus (-A) = \mathcal{O}$.
@@ -134,8 +133,8 @@ Since we are discussing elliptic curves over a finite field in a group theory co
         \item \textbf{Doubling ($A = B$):} Draw the tangent line to the curve at point $A$. This line intersects the curve at another point $C'$. Then $A \oplus A = 2A$ is defined as $-C'$.
     \end{itemize}
 
-    \textbf{Algebraic Definition (for computation in $\mathbb{Z}_q$):}
-    Let $A = (x_1, y_1)$ and $B = (x_2, y_2)$ be points on $E(\mathbb{Z}_q)$.
+    \textbf{Algebraic Definition (for computation in $\mathbb{F}_q$):}
+    Let $A = (x_1, y_1)$ and $B = (x_2, y_2)$ be points on $E(\mathbb{F}_q)$.
     \begin{itemize}
         \item If $A = \mathcal{O}$, then $A \oplus B = B$.
         \item If $B = \mathcal{O}$, then $A \oplus B = A$.
@@ -227,16 +226,16 @@ Since we are discussing elliptic curves over a finite field in a group theory co
 \end{prob}
 The DLP is why breaking encrypted messages is so difficult. Trying to find $x$ by brute force is very impractical since the easiest solution to prevent this attack from working is simply picking a very large $x$. It is general consensus that there is not a polynomial time algorithm to find $x$ (Sutherland).
 \begin{prob}[Elliptic Curve Discrete Logarithm Problem (ECDLP)]\label{pb:ecdlp}
-    Let $E$ be an elliptic curve over a finite field $\mathbb{Z}_q$. Let $P\in E(\mathbb{Z}_q)$ with $|P|=n$, and let $Q\in\langle P\rangle$. Then $Q=kP=\underbrace{P\oplus P\oplus \cdots\oplus P}_{k\text{ times}}$ for some $k\in\mathbb{Z}$. We call $k$ the discrete logarithm of $Q$ with respect to P.
+    Let $E$ be an elliptic curve over a finite field $\mathbb{F}_q$. Let $P\in E(\mathbb{F}_q)$ with $|P|=n$, and let $Q\in\langle P\rangle$. Then $Q=kP=\underbrace{P\oplus P\oplus \cdots\oplus P}_{k\text{ times}}$ for some $k\in\mathbb{F}$. We call $k$ the discrete logarithm of $Q$ with respect to P.
 \end{prob}
 \section{Main Results}
-Perhaps something that may be surprising about the set $E(\mathbb{Z}_q)$ with the binary operation $\oplus$ defined in definition (\ref{dfn:paec}) is an Abelian group. With this we move onto our first theorem.
+Perhaps something that may be surprising about the set $E(\mathbb{F}_q)$ with the binary operation $\oplus$ defined in definition (\ref{dfn:paec}) is an Abelian group. With this we move onto our first theorem.
 \begin{thm}[]\label{thm:gp-law}
-    The group $(E(\mathbb{Z}_q),\oplus)$ is an Abelian group.
+    The group $(E(\mathbb{F}_q),\oplus)$ is an Abelian group.
 \end{thm}
 \begin{proof}
-    Closeure under $\oplus$ is apparent from the fact that by definition the resulting value is another point on the elliptic curve. Commutativity can be easily seen from either the geometric interpretation of definition (\ref{dfn:paec}) or from the formulas. As the lines $\overline{AB}$ and $\overline{BA}$ are the same exacts lines. The identity element in this group is $\mathcal{O}$. If $A=(x_1,y_1)\in E(\mathbb{Z}_q)$ then it can be seen from definition (\ref{dfn:paec}) that $A^{-1}=(x_1,-y_1)\in E(\mathbb{Z}_q)$, then $A\oplus A^{-1}=\mathcal{O}=e_{E{\mathbb{Z}_q}}$.\\
-    All that is left to show that $(E(\mathbb{Z}_q),\oplus)$ is a group is that associativity holds. This is not at all apparently obvious from either the geometric or algebraic definition given in (\ref{dfn:paec}). In fact, this is quite a complicated proof and it beyond the scope of this paper, so we refer the reader to \textsection 2.4 of \textit{Elliptic Curves Number Theory and Cryptography} by \textit{Lawrence C. Washington}.
+    Closeure under $\oplus$ is apparent from the fact that by definition the resulting value is another point on the elliptic curve. Commutativity can be easily seen from either the geometric interpretation of definition (\ref{dfn:paec}) or from the formulas. As the lines $\overline{AB}$ and $\overline{BA}$ are the same exacts lines. The identity element in this group is $\mathcal{O}$. If $A=(x_1,y_1)\in E(\mathbb{F}_q)$ then it can be seen from definition (\ref{dfn:paec}) that $A^{-1}=(x_1,-y_1)\in E(\mathbb{F}_q)$, then $A\oplus A^{-1}=\mathcal{O}=e_{E{\mathbb{F}_q}}$.\\
+    All that is left to show that $(E(\mathbb{F}_q),\oplus)$ is a group is that associativity holds. This is not at all apparently obvious from either the geometric or algebraic definition given in (\ref{dfn:paec}). In fact, this is quite a complicated proof and it beyond the scope of this paper, so we refer the reader to \textsection 2.4 of \textit{Elliptic Curves Number Theory and Cryptography} by \textit{Lawrence C. Washington}.
 \end{proof}
 \begin{thm}[Elliptic Curve Security]\label{thm:ecdlp}
     ECC is more secure than RSA, and the security of ECC is realiant on the computational difficultly of the ECDLP.
